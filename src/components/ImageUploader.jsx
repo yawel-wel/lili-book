@@ -1,9 +1,6 @@
 import { useRef } from "react";
 
-export default function ImageUploader({
-  currentImages = [],
-  onImagesSelected,
-}) {
+export default function ImageUploader({ onImagesSelected }) {
   const inputRef = useRef(null);
 
   const handleChange = (e) => {
