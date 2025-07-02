@@ -2,13 +2,14 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Trash2, GripVertical } from "lucide-react";
 
-export default function SortableImage({ img, id, index, onRemove }) {
+export default function SortableImage({ img, id, index, onRemove, total }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
   const isEven = index % 2 === 0;
   const rotation = isEven ? "-25deg" : "25deg";
   const origin = isEven ? "left" : "right";
+
   const baseTransform = `perspective(800px) rotateY(${rotation})`;
   const dndTransform = CSS.Transform.toString(transform);
   const combinedTransform = dndTransform
@@ -20,8 +21,13 @@ export default function SortableImage({ img, id, index, onRemove }) {
     transformOrigin: `center ${origin}`,
     marginLeft: isEven ? "-12px" : "0",
     marginRight: isEven ? "0" : "-12px",
+    zIndex: index, // <-- ensures later pages appear "on top"
     transition,
   };
+
+  const borderClasses = ["border-t", "border-b", "border-gray-300"]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div
@@ -29,7 +35,6 @@ export default function SortableImage({ img, id, index, onRemove }) {
       style={style}
       className="relative flex-shrink-0 w-[160px] sm:w-[200px] aspect-square shadow-md rounded-md"
     >
-      {/* Drag handle */}
       <div
         {...attributes}
         {...listeners}
@@ -39,7 +44,6 @@ export default function SortableImage({ img, id, index, onRemove }) {
         <GripVertical size={16} className="text-gray-500" />
       </div>
 
-      {/* Trash icon */}
       <button
         onClick={() => onRemove(id)}
         className="absolute top-1 right-1 z-10 bg-white/90 rounded-full p-1 hover:bg-red-100"
@@ -48,8 +52,9 @@ export default function SortableImage({ img, id, index, onRemove }) {
         <Trash2 size={16} className="text-red-500" />
       </button>
 
-      {/* Image */}
-      <div className="w-full h-full bg-white overflow-hidden rounded-md">
+      <div
+        className={`w-full h-full bg-white overflow-hidden rounded-md ${borderClasses}`}
+      >
         <img
           src={img.previewUrl}
           alt={`Page ${index + 1}`}

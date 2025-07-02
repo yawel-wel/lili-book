@@ -113,6 +113,7 @@ export default function App() {
                           img={img}
                           index={index}
                           onRemove={handleRemove}
+                          total={images.length}
                         />
                       ))}
                     </div>
