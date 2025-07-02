@@ -14,8 +14,7 @@ export default function ImageUploader({
       previewUrl: URL.createObjectURL(file),
     }));
 
-    // Merge with existing images
-    onImagesSelected([...currentImages, ...newPreviews]);
+    onImagesSelected(newPreviews);
   };
 
   return (
