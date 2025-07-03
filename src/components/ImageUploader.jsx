@@ -38,8 +38,8 @@ export default function ImageUploader({ onImagesSelected }) {
     <div className="mb-6">
       <input
         type="file"
-        accept="image/*"
         multiple
+        accept="image/png, image/jpeg"
         onChange={handleChange}
         ref={inputRef}
       />

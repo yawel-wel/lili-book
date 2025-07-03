@@ -33,6 +33,14 @@ export default function App() {
     setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
+  const handleRotate = (id) => {
+    setImages((prev) =>
+      prev.map((img) =>
+        img.id === id ? { ...img, rotation: (img.rotation + 90) % 360 } : img
+      )
+    );
+  };
+
   const handleReorder = (event) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -47,6 +55,7 @@ export default function App() {
     const withIds = newImages.map((img) => ({
       ...img,
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      rotation: 0,
     }));
     setImages((prev) => [...prev, ...withIds]);
   };
@@ -114,6 +123,8 @@ export default function App() {
                           index={index}
                           onRemove={handleRemove}
                           total={images.length}
+                          rotation={img.rotation}
+                          onRotate={handleRotate}
                         />
                       ))}
                     </div>
