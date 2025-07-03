@@ -26,7 +26,6 @@ export default function App() {
 
   const handleStartOver = () => {
     setImages([]);
-    setStarted(false);
   };
 
   const handleRemove = (id) => {
