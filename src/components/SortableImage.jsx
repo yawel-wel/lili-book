@@ -28,8 +28,7 @@ export default function SortableImage({
   const style = {
     transform: combinedTransform,
     transformOrigin: `center ${origin}`,
-    marginLeft: isEven ? "-12px" : "0",
-    marginRight: isEven ? "0" : "-12px",
+    margin: "0 1px",
     zIndex: total - index, // <-- ensures later pages appear "on top"
     transition,
   };
