@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const Jimp = require("jimp");
+const sharp = require("sharp");
 const cors = require("cors");
 
 const app = express();
@@ -15,13 +15,15 @@ app.post("/upload", upload.single("image"), async (req, res) => {
   try {
     const imageBuffer = req.file.buffer;
 
-    const image = await Jimp.read(imageBuffer);
-    image.greyscale(); // convert to black and white
-
-    const processedBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+    const processedImage = await sharp(imageBuffer)
+      .greyscale()
+      .threshold(100)
+      // strong contrast, preserves object shapes
+      .toFormat("jpeg")
+      .toBuffer();
 
     res.set("Content-Type", "image/jpeg");
-    res.send(processedBuffer);
+    res.send(processedImage);
   } catch (error) {
     console.error("Image processing error:", error);
     res.status(500).send("Failed to process image");
