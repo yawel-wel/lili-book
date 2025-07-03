@@ -5,28 +5,67 @@ const cors = require("cors");
 
 const app = express();
 const PORT = 4000;
+const initialContrast = 120;
 
 app.use(cors());
-
-// Store uploaded files in memory
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.post("/upload", upload.single("image"), async (req, res) => {
+app.post("/process", upload.single("image"), async (req, res) => {
   try {
     const imageBuffer = req.file.buffer;
+    const { cropX, cropY, cropWidth, cropHeight, rotation, contrast } =
+      req.body;
 
-    const processedImage = await sharp(imageBuffer)
+    let image = sharp(imageBuffer).rotate();
+
+    // Optional: safely apply crop
+    const hasCrop =
+      cropX &&
+      cropY &&
+      cropWidth &&
+      cropHeight &&
+      !isNaN(cropX) &&
+      !isNaN(cropY) &&
+      !isNaN(cropWidth) &&
+      !isNaN(cropHeight);
+
+    if (hasCrop) {
+      const meta = await image.metadata();
+
+      const x = Math.max(0, Math.floor(Number(cropX)));
+      const y = Math.max(0, Math.floor(Number(cropY)));
+      const width = Math.min(meta.width - x, Math.floor(Number(cropWidth)));
+      const height = Math.min(meta.height - y, Math.floor(Number(cropHeight)));
+
+      if (width > 0 && height > 0) {
+        image = image.extract({ left: x, top: y, width, height });
+      } else {
+        console.warn("⚠️ Skipping crop due to invalid dimensions.");
+      }
+    }
+
+    // Optional contrast adjustment
+    if (contrast) {
+      const c = Number(contrast);
+      const slope = c / initialContrast;
+      const intercept = -30 + (slope - 1) * 20;
+      image = image.linear(slope, intercept);
+    }
+
+    // Final grayscale and high-contrast processing
+    const processed = await image
+      .resize(1024, 1024, { fit: "contain", background: "#ffffff" })
       .greyscale()
-      .threshold(100)
-      // strong contrast, preserves object shapes
+      .blur(0.3)
+      .threshold(initialContrast)
       .toFormat("jpeg")
       .toBuffer();
 
     res.set("Content-Type", "image/jpeg");
-    res.send(processedImage);
-  } catch (error) {
-    console.error("Image processing error:", error);
-    res.status(500).send("Failed to process image");
+    res.send(processed);
+  } catch (err) {
+    console.error("❌ Image processing error:", err);
+    res.status(500).send("Failed to process image.");
   }
 });
 

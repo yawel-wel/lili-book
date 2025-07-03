@@ -14,7 +14,7 @@ export default function ImageUploader({ onImagesSelected }) {
         formData.append("image", file);
 
         try {
-          const res = await fetch("http://localhost:4000/upload", {
+          const res = await fetch("http://localhost:4000/process", {
             method: "POST",
             body: formData,
           });
@@ -22,7 +22,11 @@ export default function ImageUploader({ onImagesSelected }) {
           const blob = await res.blob();
           const previewUrl = URL.createObjectURL(blob);
 
-          return { previewUrl, file };
+          // ✅ include both the original File and the preview blob
+          return {
+            file, // <-- original uploaded File object
+            previewUrl, // <-- blob from server
+          };
         } catch (err) {
           console.error("Failed to process image", err);
           return null;
@@ -32,6 +36,7 @@ export default function ImageUploader({ onImagesSelected }) {
 
     setUploading(false);
     onImagesSelected(previews.filter(Boolean));
+    inputRef.current.value = null; // the the same image could be selected twice
   };
 
   return (

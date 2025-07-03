@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import ImageUploader from "./components/ImageUploader";
 import SortableImage from "./components/SortableImage";
+import CropDialog from "./components/CropDialog";
+import { processImage } from "./utils/imageProcessing";
 
 import {
   DndContext,
@@ -21,6 +23,7 @@ import {
 export default function App() {
   const [started, setStarted] = useState(false);
   const [images, setImages] = useState([]);
+  const [cropTarget, setCropTarget] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -55,8 +58,55 @@ export default function App() {
       ...img,
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       rotation: 0,
+      crop: null,
+      contrast: 140,
+      file: img.file, // original file (needed for crop)
+      previewUrl: img.previewUrl, // blob URL for preview
     }));
     setImages((prev) => [...prev, ...withIds]);
+  };
+
+  const handleOpenCrop = (id) => {
+    const img = images.find((i) => i.id === id);
+
+    if (!img) {
+      console.warn("No image found for cropping");
+      return;
+    }
+
+    if (!img.previewUrl && img.file instanceof File) {
+      const previewUrl = URL.createObjectURL(img.file);
+      setCropTarget({ ...img, previewUrl });
+    } else {
+      setCropTarget(img);
+    }
+  };
+
+  const handleApplyCrop = async (id, crop) => {
+    const imageToUpdate = images.find((img) => img.id === id);
+    if (!imageToUpdate) return;
+
+    const updatedImage = {
+      ...imageToUpdate,
+      crop,
+    };
+
+    // Call backend to get updated preview
+    const newPreviewUrl = await processImage(updatedImage);
+
+    // Update image state with new preview and crop info
+    setImages((prev) =>
+      prev.map((img) =>
+        img.id === id
+          ? {
+              ...updatedImage,
+              previewUrl: newPreviewUrl,
+            }
+          : img
+      )
+    );
+
+    setCropTarget(null); // close crop dialog
   };
 
   return (
@@ -113,20 +163,19 @@ export default function App() {
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="flex overflow-x-auto py-6 px-2">
-                    <div className="flex overflow-x-auto py-6 px-2">
-                      {images.map((img, index) => (
-                        <SortableImage
-                          key={img.id}
-                          id={img.id}
-                          img={img}
-                          index={index}
-                          onRemove={handleRemove}
-                          total={images.length}
-                          rotation={img.rotation}
-                          onRotate={handleRotate}
-                        />
-                      ))}
-                    </div>
+                    {images.map((img, index) => (
+                      <SortableImage
+                        key={img.id}
+                        id={img.id}
+                        img={img}
+                        index={index}
+                        onRemove={handleRemove}
+                        total={images.length}
+                        rotation={img.rotation}
+                        onRotate={handleRotate}
+                        onCrop={handleOpenCrop}
+                      />
+                    ))}
                   </div>
                 </SortableContext>
               </DndContext>
@@ -142,6 +191,13 @@ export default function App() {
             </>
           )}
         </div>
+      )}
+      {cropTarget && (
+        <CropDialog
+          image={cropTarget}
+          onCancel={() => setCropTarget(null)}
+          onApply={handleApplyCrop}
+        />
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Trash2, GripVertical, RotateCcw } from "lucide-react";
+import { Crop, Trash2, GripVertical, RotateCcw } from "lucide-react";
 
 export default function SortableImage({
   img,
@@ -10,6 +10,7 @@ export default function SortableImage({
   total,
   rotation,
   onRotate,
+  onCrop,
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -58,6 +59,14 @@ export default function SortableImage({
         title="Rotate image"
       >
         <RotateCcw size={16} className="text-gray-600" />
+      </button>
+
+      <button
+        onClick={() => onCrop(id)}
+        className="absolute top-1 left-20 z-10 bg-white/90 rounded-full p-1 hover:bg-gray-200"
+        title="Crop image"
+      >
+        <Crop size={16} className="text-gray-600" />
       </button>
 
       <button
