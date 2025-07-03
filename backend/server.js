@@ -50,18 +50,20 @@ app.post("/process", upload.single("image"), async (req, res) => {
     }
 
     // Step 5: Apply optional contrast adjustment
-    if (contrast) {
-      const c = Number(contrast);
-      const slope = c / initialContrast;
-      const intercept = -30 + (slope - 1) * 20;
-      image = image.linear(slope, intercept);
-    }
+    // if (contrast) {
+    //   const c = Number(contrast);
+    //   const slope = c / initialContrast;
+    //   const intercept = -30 + (slope - 1) * 20;
+    //   image = image.linear(slope, intercept);
+    // }
+
+    const thresholdValue = Number(contrast) || initialContrast;
 
     // Step 6: Final output
     const processed = await image
       .greyscale()
       .blur(0.3)
-      .threshold(initialContrast)
+      .threshold(thresholdValue)
       .toFormat("jpeg")
       .toBuffer();
 

@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import ImageUploader from "./components/ImageUploader";
 import SortableImage from "./components/SortableImage";
 import CropDialog from "./components/CropDialog";
+import ContrastDialog from "./components/ContrastDialog";
 import { processImage } from "./utils/imageProcessing";
 
 import {
@@ -24,6 +25,7 @@ export default function App() {
   const [started, setStarted] = useState(false);
   const [images, setImages] = useState([]);
   const [cropTarget, setCropTarget] = useState(null);
+  const [contrastTarget, setContrastTarget] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -60,8 +62,8 @@ export default function App() {
       rotation: 0,
       crop: null,
       contrast: 140,
-      file: img.file, // original file (needed for crop)
-      previewUrl: img.previewUrl, // blob URL for preview
+      file: img.file,
+      previewUrl: img.previewUrl,
     }));
     setImages((prev) => [...prev, ...withIds]);
   };
@@ -91,10 +93,8 @@ export default function App() {
       crop,
     };
 
-    // Call backend to get updated preview
     const newPreviewUrl = await processImage(updatedImage);
 
-    // Update image state with new preview and crop info
     setImages((prev) =>
       prev.map((img) =>
         img.id === id
@@ -106,7 +106,36 @@ export default function App() {
       )
     );
 
-    setCropTarget(null); // close crop dialog
+    setCropTarget(null);
+  };
+
+  const handleOpenContrast = (id) => {
+    const img = images.find((i) => i.id === id);
+    if (img) {
+      setContrastTarget(img);
+    }
+  };
+
+  const handleApplyContrast = async (id, contrastValue) => {
+    const image = images.find((i) => i.id === id);
+    const newPreviewUrl = await processImage({
+      ...image,
+      contrast: contrastValue,
+    });
+
+    setImages((prev) =>
+      prev.map((img) =>
+        img.id === id
+          ? { ...img, contrast: contrastValue, previewUrl: newPreviewUrl }
+          : img
+      )
+    );
+
+    setContrastTarget(null);
+  };
+
+  const handlePreviewContrast = async (imageWithContrast) => {
+    return await processImage(imageWithContrast);
   };
 
   return (
@@ -174,6 +203,7 @@ export default function App() {
                         rotation={img.rotation}
                         onRotate={handleRotate}
                         onCrop={handleOpenCrop}
+                        onContrast={handleOpenContrast}
                       />
                     ))}
                   </div>
@@ -192,11 +222,21 @@ export default function App() {
           )}
         </div>
       )}
+
       {cropTarget && (
         <CropDialog
           image={cropTarget}
           onCancel={() => setCropTarget(null)}
           onApply={handleApplyCrop}
+        />
+      )}
+
+      {contrastTarget && (
+        <ContrastDialog
+          image={contrastTarget}
+          onCancel={() => setContrastTarget(null)}
+          onApply={handleApplyContrast}
+          processPreview={handlePreviewContrast}
         />
       )}
     </div>
