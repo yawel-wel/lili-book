@@ -16,9 +16,16 @@ app.post("/process", upload.single("image"), async (req, res) => {
     const { cropX, cropY, cropWidth, cropHeight, rotation, contrast } =
       req.body;
 
+    // Step 1: Start with raw image and rotate
     let image = sharp(imageBuffer).rotate();
 
-    // Optional: safely apply crop
+    // Step 2: Resize FIRST so frontend crop coordinates match
+    image = image.resize(1024, 1024, { fit: "contain", background: "#ffffff" });
+
+    // Step 3: Get resized image metadata
+    const meta = await image.metadata();
+
+    // Step 4: Apply crop based on scaled preview coordinates
     const hasCrop =
       cropX &&
       cropY &&
@@ -30,8 +37,6 @@ app.post("/process", upload.single("image"), async (req, res) => {
       !isNaN(cropHeight);
 
     if (hasCrop) {
-      const meta = await image.metadata();
-
       const x = Math.max(0, Math.floor(Number(cropX)));
       const y = Math.max(0, Math.floor(Number(cropY)));
       const width = Math.min(meta.width - x, Math.floor(Number(cropWidth)));
@@ -44,7 +49,7 @@ app.post("/process", upload.single("image"), async (req, res) => {
       }
     }
 
-    // Optional contrast adjustment
+    // Step 5: Apply optional contrast adjustment
     if (contrast) {
       const c = Number(contrast);
       const slope = c / initialContrast;
@@ -52,9 +57,8 @@ app.post("/process", upload.single("image"), async (req, res) => {
       image = image.linear(slope, intercept);
     }
 
-    // Final grayscale and high-contrast processing
+    // Step 6: Final output
     const processed = await image
-      .resize(1024, 1024, { fit: "contain", background: "#ffffff" })
       .greyscale()
       .blur(0.3)
       .threshold(initialContrast)

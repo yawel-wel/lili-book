@@ -18,7 +18,6 @@ export default function CropDialog({ image, onCancel, onApply }) {
   const handleApply = () => {
     onApply(image.id, croppedAreaPixels);
   };
-  console.log("** image.previewUrl **", image.previewUrl);
   return (
     <Dialog open fullWidth maxWidth="sm" onClose={onCancel}>
       <DialogContent
