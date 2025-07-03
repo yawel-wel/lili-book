@@ -21,7 +21,7 @@ export default function SortableImage({ img, id, index, onRemove, total }) {
     transformOrigin: `center ${origin}`,
     marginLeft: isEven ? "-12px" : "0",
     marginRight: isEven ? "0" : "-12px",
-    zIndex: index, // <-- ensures later pages appear "on top"
+    zIndex: total - index, // <-- ensures later pages appear "on top"
     transition,
   };
 
