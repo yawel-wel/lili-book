@@ -6,6 +6,7 @@ import ImageUploader from "./components/ImageUploader";
 import SortableImage from "./components/SortableImage";
 import CropDialog from "./components/CropDialog";
 import ContrastDialog from "./components/ContrastDialog";
+import EraserDialog from "./components/EraserDialog";
 import { processImage } from "./utils/imageProcessing";
 
 import {
@@ -26,6 +27,7 @@ export default function App() {
   const [images, setImages] = useState([]);
   const [cropTarget, setCropTarget] = useState(null);
   const [contrastTarget, setContrastTarget] = useState(null);
+  const [eraserTarget, setEraserTarget] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -70,12 +72,7 @@ export default function App() {
 
   const handleOpenCrop = (id) => {
     const img = images.find((i) => i.id === id);
-
-    if (!img) {
-      console.warn("No image found for cropping");
-      return;
-    }
-
+    if (!img) return;
     if (!img.previewUrl && img.file instanceof File) {
       const previewUrl = URL.createObjectURL(img.file);
       setCropTarget({ ...img, previewUrl });
@@ -88,32 +85,20 @@ export default function App() {
     const imageToUpdate = images.find((img) => img.id === id);
     if (!imageToUpdate) return;
 
-    const updatedImage = {
-      ...imageToUpdate,
-      crop,
-    };
-
+    const updatedImage = { ...imageToUpdate, crop };
     const newPreviewUrl = await processImage(updatedImage);
 
     setImages((prev) =>
       prev.map((img) =>
-        img.id === id
-          ? {
-              ...updatedImage,
-              previewUrl: newPreviewUrl,
-            }
-          : img
+        img.id === id ? { ...updatedImage, previewUrl: newPreviewUrl } : img
       )
     );
-
     setCropTarget(null);
   };
 
   const handleOpenContrast = (id) => {
     const img = images.find((i) => i.id === id);
-    if (img) {
-      setContrastTarget(img);
-    }
+    if (img) setContrastTarget(img);
   };
 
   const handleApplyContrast = async (id, contrastValue) => {
@@ -130,12 +115,23 @@ export default function App() {
           : img
       )
     );
-
     setContrastTarget(null);
   };
 
   const handlePreviewContrast = async (imageWithContrast) => {
     return await processImage(imageWithContrast);
+  };
+
+  const handleOpenEraser = (id) => {
+    const img = images.find((i) => i.id === id);
+    if (img) setEraserTarget(img);
+  };
+
+  const handleApplyErase = (id, newUrl) => {
+    setImages((prev) =>
+      prev.map((img) => (img.id === id ? { ...img, previewUrl: newUrl } : img))
+    );
+    setEraserTarget(null);
   };
 
   return (
@@ -204,6 +200,7 @@ export default function App() {
                         onRotate={handleRotate}
                         onCrop={handleOpenCrop}
                         onContrast={handleOpenContrast}
+                        onErase={handleOpenEraser}
                       />
                     ))}
                   </div>
@@ -237,6 +234,14 @@ export default function App() {
           onCancel={() => setContrastTarget(null)}
           onApply={handleApplyContrast}
           processPreview={handlePreviewContrast}
+        />
+      )}
+
+      {eraserTarget && (
+        <EraserDialog
+          image={eraserTarget}
+          onCancel={() => setEraserTarget(null)}
+          onApply={handleApplyErase}
         />
       )}
     </div>

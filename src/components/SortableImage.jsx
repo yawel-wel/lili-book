@@ -6,6 +6,7 @@ import {
   GripVertical,
   RotateCcw,
   SlidersHorizontal,
+  Eraser,
 } from "lucide-react";
 
 export default function SortableImage({
@@ -18,6 +19,7 @@ export default function SortableImage({
   onRotate,
   onCrop,
   onContrast,
+  onErase,
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -37,7 +39,7 @@ export default function SortableImage({
     transform: combinedTransform,
     transformOrigin: `center ${origin}`,
     margin: "0 1px",
-    zIndex: total - index, // <-- ensures later pages appear "on top"
+    zIndex: total - index,
     transition,
   };
 
@@ -82,6 +84,14 @@ export default function SortableImage({
         title="Adjust contrast"
       >
         <SlidersHorizontal size={16} className="text-gray-600" />
+      </button>
+
+      <button
+        onClick={() => onErase(id)}
+        className="absolute top-1 left-32 z-10 bg-white/90 rounded-full p-1 hover:bg-gray-200"
+        title="Erase"
+      >
+        <Eraser size={16} className="text-gray-600" />
       </button>
 
       <button
