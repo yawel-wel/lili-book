@@ -62,7 +62,7 @@ export default function SortableImage({
 
       <button
         onClick={() => onRotate(id)}
-        className="absolute top-1 left-10 z-10 bg-white/90 rounded-full p-1 hover:bg-gray-200"
+        className="absolute top-1 left-8 z-10 bg-white/90 rounded-full p-1 hover:bg-gray-200"
         title="Rotate image"
       >
         <RotateCcw size={16} className="text-gray-600" />
@@ -70,7 +70,7 @@ export default function SortableImage({
 
       <button
         onClick={() => onCrop(id)}
-        className="absolute top-1 left-20 z-10 bg-white/90 rounded-full p-1 hover:bg-gray-200"
+        className="absolute top-1 left-16 z-10 bg-white/90 rounded-full p-1 hover:bg-gray-200"
         title="Crop image"
       >
         <Crop size={16} className="text-gray-600" />
@@ -78,7 +78,7 @@ export default function SortableImage({
 
       <button
         onClick={() => onContrast(id)}
-        className="absolute top-1 left-32 z-10 bg-white/90 rounded-full p-1 hover:bg-gray-200"
+        className="absolute top-1 left-24 z-10 bg-white/90 rounded-full p-1 hover:bg-gray-200"
         title="Adjust contrast"
       >
         <SlidersHorizontal size={16} className="text-gray-600" />
