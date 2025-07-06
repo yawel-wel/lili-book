@@ -63,7 +63,7 @@ export default function App() {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       rotation: 0,
       crop: null,
-      contrast: 140,
+      contrast: 120,
       file: img.file,
       previewUrl: img.previewUrl,
     }));

@@ -12,7 +12,9 @@ export default function ContrastDialog({
   onApply,
   processPreview,
 }) {
-  const [contrast, setContrast] = useState(image.contrast || 120);
+  const [contrast, setContrast] = useState(
+    image.contrast !== undefined ? image.contrast : 120
+  );
   const [previewUrl, setPreviewUrl] = useState(image.previewUrl);
   const [loading, setLoading] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState(null);
